@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import Tab from '../Tab';
+
+import TableHeader from '../TableHeader';
+import TableRow from '../TableRow';
 import Tabs from '../Tabs';
+import Tab from '../Tab';
 
 const Calendar = () => {
   const shiftTabs = ['My shifts', 'Available shifts'];
@@ -22,11 +25,28 @@ const Calendar = () => {
     );
   };
 
-  const renderContent = () => {
-    return renderShiftTabs();
+  const renderTable = () => {
+    return (
+      <>
+        <TableHeader title='Today' subTitle='2 shifts, 4 h' />
+        <TableRow title='12:00 - 14:00' subTitle='Helsinki' />
+        <TableRow title='14:00 - 15:00' subTitle='London' />
+      </>
+    );
   };
 
-  return <div>{renderContent()}</div>;
+  const renderContent = () => {
+    return (
+      <div className='w-5/6 lg:w-1/2'>
+        {renderShiftTabs()}
+        <div className='border-2 border-borderTable rounded-md'>
+          {renderTable()}
+        </div>
+      </div>
+    );
+  };
+
+  return renderContent();
 };
 
 export default Calendar;
