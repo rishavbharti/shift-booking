@@ -94,7 +94,7 @@ export const shiftsSlice = createSlice({
           state.locations = [...new Set([...state.locations, location])];
 
           // If shift is not booked
-          if (!shift.booked) {
+          {
             state.availableShifts.all.push(_shift);
             state.availableShifts.dates = [
               ...new Set([...state.availableShifts.dates, shiftDate]),
@@ -118,9 +118,9 @@ export const shiftsSlice = createSlice({
                 state.availableShifts[location][shiftDate].count++;
                 state.availableShifts[location][shiftDate].shifts.push(_shift);
 
-                if (index === totalShifts - 1) {
-                  state.availableShifts[location][shiftDate].shifts.sort();
-                }
+                state.availableShifts[location][shiftDate].shifts.sort(
+                  (a, b) => a.startTime - b.startTime
+                );
               } else {
                 state.availableShifts[location] = {
                   ...state.availableShifts[location],
@@ -143,8 +143,9 @@ export const shiftsSlice = createSlice({
               };
             }
           }
+
           // If shift is booked
-          else {
+          if (shift.booked) {
             state.bookedShifts.all.push(_shift);
             state.bookedShifts.dates = [
               ...new Set([...state.bookedShifts.dates, shiftDate]),
@@ -159,7 +160,9 @@ export const shiftsSlice = createSlice({
             if (dateInBookedShifts) {
               state.bookedShifts[shiftDate].count++;
               state.bookedShifts[shiftDate].shifts.push(_shift);
-              state.availableShifts[shiftDate].shifts.sort();
+              state.availableShifts[shiftDate].shifts.sort(
+                (a, b) => a.startTime - b.startTime
+              );
 
               // To do: Add duration
             }

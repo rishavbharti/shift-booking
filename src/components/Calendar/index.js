@@ -4,10 +4,13 @@ import TableHeader from '../TableHeader';
 import TableRow from '../TableRow';
 import Tabs from '../Tabs';
 import Tab from '../Tab';
+import AvailableShiftsTab from './components/AvailableShiftsTab';
 
-const Calendar = () => {
+const Calendar = (props) => {
+  const { locations, dates, bookedShifts, availableShifts } = props;
+
   const shiftTabs = ['My shifts', 'Available shifts'];
-  const [activeShiftTab, setActiveShiftTab] = useState(shiftTabs[0]);
+  const [activeShiftTab, setActiveShiftTab] = useState(shiftTabs[1]);
 
   const renderShiftTabs = () => {
     const handleChange = (value) => {
@@ -26,13 +29,14 @@ const Calendar = () => {
   };
 
   const renderTable = () => {
-    return (
-      <>
-        <TableHeader title='Today' subTitle='2 shifts, 4 h' />
-        <TableRow title='12:00 - 14:00' subTitle='Helsinki' />
-        <TableRow title='14:00 - 15:00' subTitle='London' />
-      </>
-    );
+    if (activeShiftTab === 'Available shifts')
+      return (
+        <AvailableShiftsTab
+          locations={availableShifts.locations}
+          dates={availableShifts.dates}
+          availableShifts={availableShifts}
+        />
+      );
   };
 
   const renderContent = () => {
