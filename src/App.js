@@ -1,10 +1,10 @@
 import React from 'react';
-import Calendar from './components/Calendar';
+import Shifts from './pages/Shifts';
 
 function App() {
   return (
-    <div className='grid place-items-center m-20'>
-      <Calendar />
+    <div>
+      <Shifts />
     </div>
   );
 }
