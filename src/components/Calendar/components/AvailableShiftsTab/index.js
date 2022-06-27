@@ -37,8 +37,8 @@ const AvailableShiftsTab = (props) => {
     dispatch(bookShift({ location, date, index, id }));
   };
 
-  const renderDate = (date) => {
-    const renderDateHeader = () => <TableHeader title={date} />;
+  const renderDateAndShifts = (date) => {
+    const renderDate = () => <TableHeader title={date} />;
 
     const renderShifts = () => {
       const shifts = availableShifts[activeLocationTab][date].shifts;
@@ -77,7 +77,7 @@ const AvailableShiftsTab = (props) => {
             status={status}
             ctaLabel={label}
             ctaVariant={variant}
-            disabled={shift?.loading || isOverlapping}
+            disabled={shift?.loading || isOverlapping || shift.elapsed}
             onClick={handleClick.bind(
               this,
               shift.area,
@@ -94,25 +94,25 @@ const AvailableShiftsTab = (props) => {
 
     return (
       <>
-        {renderDateHeader()}
-        {renderShifts()}
+        {renderDate()}
+        <ul>{renderShifts()}</ul>
       </>
     );
   };
 
-  const renderLocationContent = (location) => {
+  const renderLocationContent = () => {
     if (availableShifts[activeLocationTab]) {
       return availableShifts[activeLocationTab].dates.map((date) =>
-        renderDate(date)
+        renderDateAndShifts(date)
       );
     }
   };
 
   return (
-    <div>
+    <>
       {renderLocationsTabs()}
       {renderLocationContent()}
-    </div>
+    </>
   );
 };
 

@@ -110,6 +110,7 @@ export const shiftsSlice = createSlice({
 
         const today = getTodayDate();
         const tomorrow = getTomorrowDate();
+        const now = new Date();
 
         shifts.forEach((shift, index) => {
           const shiftDate = getMonthAndDate(shift.startTime);
@@ -121,6 +122,7 @@ export const shiftsSlice = createSlice({
 
           const _shift = {
             ...shift,
+            elapsed: shift.startTime <= now,
             overlapping: false,
             localStartTime: startTime,
             localEndTime: endTime,
@@ -154,10 +156,6 @@ export const shiftsSlice = createSlice({
               if (dateInAvailableShifts) {
                 state.availableShifts[location][shiftDate].count++;
                 state.availableShifts[location][shiftDate].shifts.push(_shift);
-
-                // state.availableShifts[location][shiftDate].shifts.sort(
-                //   (a, b) => a.startTime - b.startTime
-                // );
               } else {
                 state.availableShifts[location] = {
                   ...state.availableShifts[location],
@@ -198,9 +196,6 @@ export const shiftsSlice = createSlice({
             if (dateInBookedShifts) {
               state.bookedShifts[shiftDate].count++;
               state.bookedShifts[shiftDate].shifts.push(_shift);
-              // state.bookedShifts[shiftDate].shifts.sort(
-              //   (a, b) => a.startTime - b.startTime
-              // );
 
               // To do: Add duration
             }

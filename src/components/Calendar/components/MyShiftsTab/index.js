@@ -25,7 +25,7 @@ const MyShiftsTab = (props) => {
             key={shift.id}
             ctaLabel='Cancel'
             ctaVariant='alert'
-            disabled={shift?.loading}
+            disabled={shift?.loading || shift.elapsed}
             onClick={handleClick.bind(
               this,
               shift.area,
