@@ -11,7 +11,7 @@ const Calendar = (props) => {
   const { bookedShifts, availableShifts } = props;
 
   const shiftTabs = Object.values(SHIFT_TABS);
-  const [activeShiftTab, setActiveShiftTab] = useState(shiftTabs[1]);
+  const [activeShiftTab, setActiveShiftTab] = useState(shiftTabs[0]);
 
   const handleChange = (value) => {
     if (activeShiftTab !== value) {

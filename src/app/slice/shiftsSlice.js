@@ -328,10 +328,10 @@ export const shiftsSlice = createSlice({
       })
       .addCase(cancelShift.fulfilled, (state, action) => {
         const {
-          payload: { location, date, index, id, shift },
+          payload: { location, date, index, shift },
         } = action;
 
-        delete state.shiftStatus[id];
+        delete state.shiftStatus[shift.id];
 
         const shiftDate = getMonthAndDate(shift.startTime);
 
@@ -341,20 +341,25 @@ export const shiftsSlice = createSlice({
           loading: false,
         };
 
-        // Removal from `bookedShifts` state not working
+        // Removal from `bookedShifts` state
         state.bookedShifts.all = state.bookedShifts.all.filter(
-          (_shift) => _shift.id !== id
+          (_shift) => _shift.id !== shift.id
         );
 
         state.bookedShifts[shiftDate].count--;
-        const bookedShifts = state.bookedShifts[shiftDate].shifts;
-        state.bookedShifts[shiftDate].shifts = bookedShifts.filter(
-          (_shift) => _shift.id !== id
-        );
 
-        // console.log(bookedShifts.filter((_shift) => _shift.id !== id));
+        if (state.bookedShifts[shiftDate].count === 0) {
+          state.bookedShifts.dates = state.bookedShifts.dates.filter(
+            (date) => date !== shiftDate
+          );
+          delete state.bookedShifts[shiftDate];
+        } else {
+          state.bookedShifts[shiftDate].shifts = state.bookedShifts[
+            shiftDate
+          ].shifts.filter((_shift) => _shift.id !== shift.id);
 
-        // To do: Reduce duration
+          // To do: Reduce duration
+        }
       })
       .addCase(cancelShift.rejected, (state, action) => {
         const {
