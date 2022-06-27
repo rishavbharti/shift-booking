@@ -33,13 +33,13 @@ const TableRow = (props) => {
   };
 
   return (
-    <div className='flex items-center justify-between px-6 py-3 border-b border-borderRow'>
+    <li className='flex items-center justify-between px-6 py-3 border-b border-borderRow'>
       <div className='flex flex-col gap-1'>
         <p className='text-headingText'>{title}</p>
         <p className='text-labelText text-sm'>{subTitle}</p>
       </div>
       {renderStatusAndCTA()}
-    </div>
+    </li>
   );
 };
 
