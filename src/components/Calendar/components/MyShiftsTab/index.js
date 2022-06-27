@@ -4,6 +4,8 @@ import { useDispatch } from 'react-redux';
 import TableHeader from 'components/TableHeader';
 import TableRow from 'components/TableRow';
 
+import { BUTTON_VARIANTS } from '../../../../constants';
+
 const MyShiftsTab = (props) => {
   const { bookedShifts, dates } = props;
   const dispatch = useDispatch();
@@ -24,7 +26,7 @@ const MyShiftsTab = (props) => {
             subTitle={shift.area}
             key={shift.id}
             ctaLabel='Cancel'
-            ctaVariant='alert'
+            ctaVariant={BUTTON_VARIANTS.ALERT}
             disabled={shift?.loading || shift.elapsed}
             onClick={handleClick.bind(
               this,

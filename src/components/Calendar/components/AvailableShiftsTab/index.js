@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import Tabs from '../../../Tabs';
-import Tab from '../../../Tab';
-import TableHeader from '../../../TableHeader';
-import TableRow from '../../../TableRow';
+import Tabs from 'components/Tabs';
+import Tab from 'components/Tab';
+import TableHeader from 'components/TableHeader';
+import TableRow from 'components/TableRow';
 
-import { SHIFT_STATUS } from '../../../../constants';
+import { BUTTON_VARIANTS, SHIFT_STATUS } from '../../../../constants';
+
 import { bookShift } from 'app/slice/shiftsSlice';
 
 const AvailableShiftsTab = (props) => {
@@ -59,13 +60,13 @@ const AvailableShiftsTab = (props) => {
             return {
               status: SHIFT_STATUS.BOOKED,
               label: 'Cancel',
-              variant: 'alert',
+              variant: BUTTON_VARIANTS.ALERT,
             };
           } else {
             return {
               status: isOverlapping ? SHIFT_STATUS.OVERLAP : '',
               label: 'Book',
-              variant: 'success',
+              variant: BUTTON_VARIANTS.SUCCESS,
             };
           }
         })();
