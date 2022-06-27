@@ -1,12 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-import {
-  getMonthAndDate,
-  getTimeInHoursMinutes,
-  getTodayDate,
-  getTomorrowDate,
-} from '../../utilities';
+import { getMonthAndDate, getTimeInHoursMinutes } from '../../utilities';
 
 const BASE_URL = 'http://127.0.0.1:8080';
 
@@ -35,11 +30,36 @@ export const getAllShifts = createAsyncThunk(
 
 export const bookShift = createAsyncThunk(
   'shifts/bookShift',
-  async ({ location, date, index, id }, { rejectWithValue }) => {
+  async (
+    { location, date, index, id, localStartTime, localEndTime },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await axios.post(`${BASE_URL}/shifts/${id}/book`);
 
-      return { location, date, index };
+      return {
+        location,
+        date,
+        index,
+        shift: { ...response.data, localStartTime, localEndTime },
+      };
+    } catch (error) {
+      console.error(error);
+      if (!error.response) {
+        throw error;
+      }
+      return rejectWithValue(...error.response.data.errors);
+    }
+  }
+);
+
+export const cancelShift = createAsyncThunk(
+  'shifts/cancelShift',
+  async ({ location, date, index, id }, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(`${BASE_URL}/shifts/${id}/cancel`);
+
+      return { location, date, index, shift: { ...response.data } };
     } catch (error) {
       console.error(error);
       if (!error.response) {
@@ -108,8 +128,8 @@ export const shiftsSlice = createSlice({
 
         shifts.sort((a, b) => a.startTime - b.startTime);
 
-        const today = getTodayDate();
-        const tomorrow = getTomorrowDate();
+        // const today = getTodayDate();
+        // const tomorrow = getTomorrowDate();
         const now = new Date();
 
         shifts.forEach((shift, index) => {
@@ -127,9 +147,6 @@ export const shiftsSlice = createSlice({
             localStartTime: startTime,
             localEndTime: endTime,
           };
-
-          // state.dates = [...new Set([...state.dates, shiftDate])];
-          // state.locations = [...new Set([...state.locations, location])];
 
           // If shift is not booked
           {
@@ -237,16 +254,109 @@ export const shiftsSlice = createSlice({
       })
       .addCase(bookShift.fulfilled, (state, action) => {
         const {
-          payload: { location, date, index },
+          payload: { location, date, index, shift },
         } = action;
+
+        const shiftDate = getMonthAndDate(shift.startTime);
 
         state.availableShifts[location][date].shifts[index] = {
           ...state.availableShifts[location][date].shifts[index],
           booked: true,
           loading: false,
         };
+
+        // Add to `bookedShifts`
+        state.bookedShifts.all.push(shift);
+        state.bookedShifts.dates = [
+          ...new Set([...state.bookedShifts.dates, shiftDate]),
+        ];
+        state.bookedShifts.locations = [
+          ...new Set([...state.bookedShifts.locations, location]),
+        ];
+
+        const dateInBookedShifts = state.bookedShifts[shiftDate];
+
+        // If date exists in 'bookedShifts' state object
+        if (dateInBookedShifts) {
+          state.bookedShifts[shiftDate].count++;
+          state.bookedShifts[shiftDate].shifts.push(shift);
+
+          state.bookedShifts[shiftDate].shifts.sort(
+            (a, b) => a.startTime - b.startTime
+          );
+
+          // To do: Add duration
+        }
+        // If date is not in 'bookedShifts' state object
+        else {
+          state.bookedShifts = {
+            ...state.bookedShifts,
+            [shiftDate]: {
+              count: 1,
+              duration: '',
+              shifts: [shift],
+            },
+          };
+        }
       })
       .addCase(bookShift.rejected, (state, action) => {
+        const {
+          payload: { location, date, index },
+        } = action;
+
+        state.availableShifts[location][date].shifts[index] = {
+          ...state.availableShifts[location][date].shifts[index],
+          loading: false,
+        };
+      })
+
+      .addCase(cancelShift.pending, (state, action) => {
+        const {
+          meta: {
+            arg: { location, date, index, id },
+          },
+        } = action;
+
+        state.availableShifts[location][date].shifts[index] = {
+          ...state.availableShifts[location][date].shifts[index],
+          loading: true,
+        };
+
+        state.shiftStatus = {
+          [id]: { loading: true },
+        };
+      })
+      .addCase(cancelShift.fulfilled, (state, action) => {
+        const {
+          payload: { location, date, index, id, shift },
+        } = action;
+
+        delete state.shiftStatus[id];
+
+        const shiftDate = getMonthAndDate(shift.startTime);
+
+        state.availableShifts[location][date].shifts[index] = {
+          ...state.availableShifts[location][date].shifts[index],
+          booked: false,
+          loading: false,
+        };
+
+        // Removal from `bookedShifts` state not working
+        state.bookedShifts.all = state.bookedShifts.all.filter(
+          (_shift) => _shift.id !== id
+        );
+
+        state.bookedShifts[shiftDate].count--;
+        const bookedShifts = state.bookedShifts[shiftDate].shifts;
+        state.bookedShifts[shiftDate].shifts = bookedShifts.filter(
+          (_shift) => _shift.id !== id
+        );
+
+        // console.log(bookedShifts.filter((_shift) => _shift.id !== id));
+
+        // To do: Reduce duration
+      })
+      .addCase(cancelShift.rejected, (state, action) => {
         const {
           payload: { location, date, index },
         } = action;

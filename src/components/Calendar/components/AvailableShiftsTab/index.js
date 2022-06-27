@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import Tabs from 'components/Tabs';
 import Tab from 'components/Tab';
 import TableHeader from 'components/TableHeader';
@@ -7,7 +7,7 @@ import TableRow from 'components/TableRow';
 
 import { BUTTON_VARIANTS, SHIFT_STATUS } from '../../../../constants';
 
-import { bookShift } from 'app/slice/shiftsSlice';
+import { bookShift, cancelShift } from 'app/slice/shiftsSlice';
 
 const AvailableShiftsTab = (props) => {
   const { locations, availableShifts } = props;
@@ -34,8 +34,23 @@ const AvailableShiftsTab = (props) => {
     );
   };
 
-  const handleClick = (location, date, index, id, booked, isOverlapping) => {
-    dispatch(bookShift({ location, date, index, id }));
+  const handleClick = (
+    location,
+    date,
+    index,
+    id,
+    booked,
+    isOverlapping,
+    localStartTime,
+    localEndTime
+  ) => {
+    if (booked) {
+      dispatch(cancelShift({ location, date, index, id }));
+    } else {
+      dispatch(
+        bookShift({ location, date, index, id, localStartTime, localEndTime })
+      );
+    }
   };
 
   const renderDateAndShifts = (date) => {
@@ -86,7 +101,9 @@ const AvailableShiftsTab = (props) => {
               index,
               shift.id,
               shift.booked,
-              isOverlapping
+              isOverlapping,
+              shift.localStartTime,
+              shift.localEndTime
             )}
           />
         );

@@ -6,13 +6,14 @@ import TableRow from 'components/TableRow';
 
 import { BUTTON_VARIANTS } from '../../../../constants';
 
+import { cancelShift } from 'app/slice/shiftsSlice';
+
 const MyShiftsTab = (props) => {
   const { bookedShifts, dates } = props;
   const dispatch = useDispatch();
 
   const handleClick = (location, date, index, id) => {
-    console.log(location, date, index, id);
-    // dispatch(cancelShift({ location, date, index, id }));
+    dispatch(cancelShift({ location, date, index, id }));
   };
 
   const renderDateAndShifts = (date) => {
