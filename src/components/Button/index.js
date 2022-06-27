@@ -12,7 +12,13 @@ const Button = (props) => {
     <button
       className={clsx('rounded-full px-8 py-1 border', {
         'text-confirmText border-confirmText': variant === varaints.SUCCESS,
-        'text-alertText border-alertText': variant === varaints.ALERT,
+        'text-confirmTextFaded border-confirmTextFaded':
+          variant === varaints.SUCCESS && disabled,
+
+        'text-alertText border-alertText':
+          variant === varaints.ALERT && disabled,
+        'text-alertTextFaded border-alertTextFaded': variant === varaints.ALERT,
+
         'animate-pulse text-2xl font-extrabold': loading,
       })}
       onClick={onClick}

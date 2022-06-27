@@ -14,7 +14,9 @@ module.exports = {
         labelText: '#CBD2E1',
 
         confirmText: '#55CB82',
+        confirmTextFaded: '#CAEFD8',
         alertText: '#E2006A',
+        alertTextFaded: '#FE93B3',
       },
     },
   },

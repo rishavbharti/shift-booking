@@ -9,8 +9,6 @@ const Shifts = () => {
   const dispatch = useDispatch();
   const {
     status: { loading, error, errorMessage },
-    locations,
-    dates,
     bookedShifts,
     availableShifts,
   } = useSelector((state) => state.shifts);
@@ -26,8 +24,6 @@ const Shifts = () => {
 
     return (
       <Calendar
-        locations={locations}
-        dates={dates}
         bookedShifts={bookedShifts}
         availableShifts={availableShifts}
       />

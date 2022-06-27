@@ -1,7 +1,12 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-import { getTimeInHoursMinutes } from '../../utilities';
+import {
+  getMonthAndDate,
+  getTimeInHoursMinutes,
+  getTodayDate,
+  getTomorrowDate,
+} from '../../utilities';
 
 const BASE_URL = 'http://127.0.0.1:8080';
 
@@ -28,11 +33,33 @@ export const getAllShifts = createAsyncThunk(
   }
 );
 
+export const bookShift = createAsyncThunk(
+  'shifts/bookShift',
+  async ({ location, date, index, id }, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(`${BASE_URL}/shifts/${id}/book`);
+
+      return { location, date, index };
+    } catch (error) {
+      console.error(error);
+      if (!error.response) {
+        throw error;
+      }
+      return rejectWithValue(...error.response.data.errors);
+    }
+  }
+);
+
 export const shiftsSlice = createSlice({
   name: 'shifts',
   initialState: {
-    locations: [],
-    dates: [],
+    // locations: [],
+    shiftStatus: {
+      // [id]: {
+      //   loading: true,
+      //   error: false,
+      // },
+    },
 
     bookedShifts: {
       all: [],
@@ -52,6 +79,7 @@ export const shiftsSlice = createSlice({
       locations: [],
       // [location]: {
       //   dates: [],
+      //   count: 0,
       //   date1: {
       //     date: '',
       //     count: 0,
@@ -77,21 +105,29 @@ export const shiftsSlice = createSlice({
       })
       .addCase(getAllShifts.fulfilled, (state, action) => {
         const { shifts } = action.payload;
-        const totalShifts = shifts.length;
+
+        shifts.sort((a, b) => a.startTime - b.startTime);
+
+        const today = getTodayDate();
+        const tomorrow = getTomorrowDate();
 
         shifts.forEach((shift, index) => {
-          const shiftDate = new Date(shift.startTime).toLocaleDateString();
+          const shiftDate = getMonthAndDate(shift.startTime);
+
           const startTime = getTimeInHoursMinutes(shift.startTime);
           const endTime = getTimeInHoursMinutes(shift.endTime);
+
           const location = shift.area;
+
           const _shift = {
             ...shift,
+            overlapping: false,
             localStartTime: startTime,
             localEndTime: endTime,
           };
 
-          state.dates = [...new Set([...state.dates, shiftDate])];
-          state.locations = [...new Set([...state.locations, location])];
+          // state.dates = [...new Set([...state.dates, shiftDate])];
+          // state.locations = [...new Set([...state.locations, location])];
 
           // If shift is not booked
           {
@@ -110,6 +146,7 @@ export const shiftsSlice = createSlice({
               state.availableShifts[location].dates = [
                 ...new Set([...locationInAvailableShifts.dates, shiftDate]),
               ];
+              state.availableShifts[location].count++;
 
               const dateInAvailableShifts =
                 state.availableShifts[location][shiftDate];
@@ -118,9 +155,9 @@ export const shiftsSlice = createSlice({
                 state.availableShifts[location][shiftDate].count++;
                 state.availableShifts[location][shiftDate].shifts.push(_shift);
 
-                state.availableShifts[location][shiftDate].shifts.sort(
-                  (a, b) => a.startTime - b.startTime
-                );
+                // state.availableShifts[location][shiftDate].shifts.sort(
+                //   (a, b) => a.startTime - b.startTime
+                // );
               } else {
                 state.availableShifts[location] = {
                   ...state.availableShifts[location],
@@ -135,6 +172,7 @@ export const shiftsSlice = createSlice({
                 ...state.availableShifts,
                 [location]: {
                   dates: [shiftDate],
+                  count: 1,
                   [shiftDate]: {
                     count: 1,
                     shifts: [_shift],
@@ -150,7 +188,7 @@ export const shiftsSlice = createSlice({
             state.bookedShifts.dates = [
               ...new Set([...state.bookedShifts.dates, shiftDate]),
             ];
-            state.booked.locations = [
+            state.bookedShifts.locations = [
               ...new Set([...state.bookedShifts.locations, location]),
             ];
 
@@ -160,9 +198,9 @@ export const shiftsSlice = createSlice({
             if (dateInBookedShifts) {
               state.bookedShifts[shiftDate].count++;
               state.bookedShifts[shiftDate].shifts.push(_shift);
-              state.availableShifts[shiftDate].shifts.sort(
-                (a, b) => a.startTime - b.startTime
-              );
+              // state.bookedShifts[shiftDate].shifts.sort(
+              //   (a, b) => a.startTime - b.startTime
+              // );
 
               // To do: Add duration
             }
@@ -188,6 +226,40 @@ export const shiftsSlice = createSlice({
         state.status.error = true;
         state.status.errorMessage =
           action?.payload || 'Something went wrong while fetching data';
+      })
+
+      .addCase(bookShift.pending, (state, action) => {
+        const {
+          meta: {
+            arg: { location, date, index },
+          },
+        } = action;
+
+        state.availableShifts[location][date].shifts[index] = {
+          ...state.availableShifts[location][date].shifts[index],
+          loading: true,
+        };
+      })
+      .addCase(bookShift.fulfilled, (state, action) => {
+        const {
+          payload: { location, date, index },
+        } = action;
+
+        state.availableShifts[location][date].shifts[index] = {
+          ...state.availableShifts[location][date].shifts[index],
+          booked: true,
+          loading: false,
+        };
+      })
+      .addCase(bookShift.rejected, (state, action) => {
+        const {
+          payload: { location, date, index },
+        } = action;
+
+        state.availableShifts[location][date].shifts[index] = {
+          ...state.availableShifts[location][date].shifts[index],
+          loading: false,
+        };
       });
   },
 });
