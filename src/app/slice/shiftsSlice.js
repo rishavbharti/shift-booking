@@ -48,7 +48,7 @@ export const bookShift = createAsyncThunk(
       if (!error.response) {
         throw error;
       }
-      return rejectWithValue(...error.response.data.errors);
+      return rejectWithValue(error.response.data.error.message);
     }
   }
 );
@@ -301,7 +301,9 @@ export const shiftsSlice = createSlice({
       })
       .addCase(bookShift.rejected, (state, action) => {
         const {
-          payload: { location, date, index },
+          meta: {
+            arg: { location, date, index },
+          },
         } = action;
 
         state.availableShifts[location][date].shifts[index] = {
