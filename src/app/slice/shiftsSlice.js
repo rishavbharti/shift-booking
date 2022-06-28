@@ -160,7 +160,7 @@ export const shiftsSlice = createSlice({
 
             const locationInAvailableShifts = state.availableShifts[location];
 
-            // If location is not present in `availableShifts` state object
+            // If location is present in `availableShifts` state object
             if (locationInAvailableShifts) {
               state.availableShifts[location].dates = [
                 ...new Set([...locationInAvailableShifts.dates, shiftDate]),
@@ -182,7 +182,9 @@ export const shiftsSlice = createSlice({
                   },
                 };
               }
-            } else {
+            }
+            // If location is not present in `availableShifts` state object
+            else {
               state.availableShifts = {
                 ...state.availableShifts,
                 [location]: {
